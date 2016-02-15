@@ -422,7 +422,7 @@ func webhookHandler(w http.ResponseWriter, r *http.Request) {
 	*/
 
 	if _, _, err := client.Issues.CreateComment(ghUser, ghRepo, *hook.Number, &github.IssueComment{
-		Body: github.String(fmt.Sprintf("This repository has chosen to disable pull requests that target %s.", repo.Branch)), // TODO: configurable
+		Body: github.String(fmt.Sprintf("This repository has chosen to disable pull requests that target branch `%s`.", repo.Branch)), // TODO: configurable
 	}); err != nil {
 		ctx.Errorf("failed to create comment: %v", err)
 	}
