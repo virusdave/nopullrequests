@@ -31,7 +31,7 @@ const (
 
 var scopes = strings.Join([]string{
 	"user:email",      // permission to get basic information about the user
-	"public_repo",     // permission to close PRs
+	"repo",     // permission to close PRs
 	"admin:repo_hook", // permission to add/delete webhooks
 	// TODO: ask for this when we're not just closing the PR
 	// "repo:status",     // permission to add statuses to commits
@@ -417,10 +417,20 @@ func webhookHandler(w http.ResponseWriter, r *http.Request) {
 	*/
 
 	if _, _, err := client.Issues.CreateComment(ghUser, ghRepo, *hook.Number, &github.IssueComment{
-		Body: github.String("This repository has chosen to disable pull requests."), // TODO: configurable
+		Body: github.String("This repository has chosen to disable (some) pull requests."), // TODO: configurable
 	}); err != nil {
 		ctx.Errorf("failed to create comment: %v", err)
 	}
+
+  if pr, _, err := client.PullRequests.Get(ghUser, ghRepo, *hook.Number); err != nil {
+    ctx.Errorf("failed to retrieve pull request: %v", err)
+  }
+
+  // TODO(dnicponski): This should be a per-repo list of branches, probably.
+  if *pr.Base.Ref != "stage" {
+    ctx.Infof("avoiding to close PR with dest branch %s", *pr.Base.Ref)
+    return
+  }
 
 	if _, _, err := client.PullRequests.Edit(ghUser, ghRepo, *hook.Number, &github.PullRequest{
 		State: github.String("closed"),
