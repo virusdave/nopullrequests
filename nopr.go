@@ -317,7 +317,7 @@ func disableHandler(w http.ResponseWriter, r *http.Request) {
 		UserID:    u.GoogleUserID,
 		WebhookID: *hook.ID,
     // TODO(dnicponski): This is not good enough!
-    Branch: "stage"
+    Branch: "stage",
 	}); err != nil {
 		ctx.Errorf("put repo: %v", err)
 		renderError(w, "Error writing repo entry")
