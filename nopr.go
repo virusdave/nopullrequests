@@ -300,7 +300,7 @@ func disableHandler(w http.ResponseWriter, r *http.Request) {
 
 	firstFullName := r.URL.Path[len("/disable/"):]
   branch := ""
-  var fullName: String = firstFullName
+  fullName := firstFullName
   if strings.Contains(firstFullName, "____") {
     splits := strings.SplitN(fullName, "____", 2)
     fullName = splits[0]
