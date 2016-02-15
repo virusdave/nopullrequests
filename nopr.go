@@ -421,12 +421,6 @@ func webhookHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	*/
 
-	if _, _, err := client.Issues.CreateComment(ghUser, ghRepo, *hook.Number, &github.IssueComment{
-		Body: github.String(fmt.Sprintf("This repository has chosen to disable pull requests that target branch `%s`.", repo.Branch)), // TODO: configurable
-	}); err != nil {
-		ctx.Errorf("failed to create comment: %v", err)
-	}
-
   {
     pr, _, err := client.PullRequests.Get(ghUser, ghRepo, *hook.Number)
     if err != nil {
@@ -439,6 +433,13 @@ func webhookHandler(w http.ResponseWriter, r *http.Request) {
       return
     }
   }
+ 
+
+	if _, _, err := client.Issues.CreateComment(ghUser, ghRepo, *hook.Number, &github.IssueComment{
+		Body: github.String(fmt.Sprintf("This repository has chosen to disable pull requests that target branch `%s`.", repo.Branch)), // TODO: configurable
+	}); err != nil {
+		ctx.Errorf("failed to create comment: %v", err)
+	}
 
 	if _, _, err := client.PullRequests.Edit(ghUser, ghRepo, *hook.Number, &github.PullRequest{
 		State: github.String("closed"),
