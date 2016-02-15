@@ -11,13 +11,13 @@ var userTmpl = template.Must(template.New("user").Parse(`<html><head>
 GitHub Pull Request Rejection Bot</h1>
 <ul><form>
 {{range .}}
-  <li><span class="octicon octicon-repo"></span>
+<li><span class="octicon octicon-repo"></span>
   <a href="https://github.com/{{.Repo.Owner.Login}}/{{.Repo.Name}}">
   {{.Repo.Owner.Login}} / <b>{{.Repo.Name}}</b></a>
 {{if .Disabled}}
   <button id="enable" type="submit" formaction="/enable/{{.Repo.Owner.Login}}/{{.Repo.Name}}" formmethod="POST">
     <span class="octicon octicon-git-pull-request"></span>
-    Re-enable pull requests
+    Re-enable pull requests ({{.Branch}})
   </button>
 {{else}}
   <button id="disable" type="submit" formaction="/disable/{{.Repo.Owner.Login}}/{{.Repo.Name}}" formmethod="POST">
