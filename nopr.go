@@ -298,10 +298,11 @@ func disableHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	// TODO: check that the user is an admin on the repo
 
-	fullName := r.URL.Path[len("/disable/"):]
+	firstFullName := r.URL.Path[len("/disable/"):]
   branch := ""
-  if strings.Contains(fullName, "#") {
-    splits := strings.SplitN(fullName, "#", 2)
+  var fullName: String = firstFullName
+  if strings.Contains(firstFullName, "____") {
+    splits := strings.SplitN(fullName, "____", 2)
     fullName = splits[0]
     branch = splits[1]
   }
