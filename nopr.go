@@ -427,14 +427,17 @@ func webhookHandler(w http.ResponseWriter, r *http.Request) {
 		ctx.Errorf("failed to create comment: %v", err)
 	}
 
-  if pr, _, err := client.PullRequests.Get(ghUser, ghRepo, *hook.Number); err != nil {
-    ctx.Errorf("failed to retrieve pull request: %v", err)
-  }
+  {
+    pr, _, err := client.PullRequests.Get(ghUser, ghRepo, *hook.Number)
+    if err != nil {
+      ctx.Errorf("failed to retrieve pull request: %v", err)
+    }
 
-  // TODO(dnicponski): This should be a per-repo list of branches, probably.
-  if *pr.Base.Ref != repo.Branch {
-    ctx.Infof("avoiding to close PR with dest branch %s for repo %v", *pr.Base.Ref, *repo)
-    return
+    // TODO(dnicponski): This should be a per-repo list of branches, probably.
+    if *pr.Base.Ref != repo.Branch {
+      ctx.Infof("avoiding to close PR with dest branch %s for repo %v", *pr.Base.Ref, *repo)
+      return
+    }
   }
 
 	if _, _, err := client.PullRequests.Edit(ghUser, ghRepo, *hook.Number, &github.PullRequest{
