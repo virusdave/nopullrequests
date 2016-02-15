@@ -31,7 +31,7 @@ const (
 
 var scopes = strings.Join([]string{
 	"user:email",      // permission to get basic information about the user
-	"repo",     // permission to close PRs
+	"repo",            // permission to close PRs
 	"admin:repo_hook", // permission to add/delete webhooks
 	// TODO: ask for this when we're not just closing the PR
 	// "repo:status",     // permission to add statuses to commits
@@ -109,6 +109,8 @@ func oauthHandler(w http.ResponseWriter, r *http.Request) {
 		renderError(w, "Error writing user entry")
 		return
 	}
+  ctx.Errorf("Accepting user: %v", *ghu.ID)
+
 	http.Redirect(w, r, "/user", http.StatusSeeOther)
 }
 
@@ -239,6 +241,7 @@ type Repo struct {
 	FullName  string // e.g., MyUser/foo-bar
 	UserID    string // User key to use to close PRs
 	WebhookID int    // Used to delete the hook
+  Branch    string // branch to protect
 }
 
 func (r Repo) Split() (string, string) {
@@ -313,6 +316,8 @@ func disableHandler(w http.ResponseWriter, r *http.Request) {
 		FullName:  fullName,
 		UserID:    u.GoogleUserID,
 		WebhookID: *hook.ID,
+    // TODO(dnicponski): This is not good enough!
+    Branch: "stage"
 	}); err != nil {
 		ctx.Errorf("put repo: %v", err)
 		renderError(w, "Error writing repo entry")
@@ -427,8 +432,8 @@ func webhookHandler(w http.ResponseWriter, r *http.Request) {
   }
 
   // TODO(dnicponski): This should be a per-repo list of branches, probably.
-  if *pr.Base.Ref != "stage" {
-    ctx.Infof("avoiding to close PR with dest branch %s", *pr.Base.Ref)
+  if *pr.Base.Ref != repo.Branch {
+    ctx.Infof("avoiding to close PR with dest branch %s for repo %v", *pr.Base.Ref, *repo)
     return
   }
 
