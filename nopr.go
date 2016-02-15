@@ -206,6 +206,7 @@ func userHandler(w http.ResponseWriter, r *http.Request) {
 	type data struct {
 		Repo     github.Repository
 		Disabled bool
+    Branch   string
 	}
 	d := []data{}
 
@@ -218,7 +219,9 @@ func userHandler(w http.ResponseWriter, r *http.Request) {
 		if me, ok := err.(appengine.MultiError); ok {
 			for i, e := range me {
 				var disabled = e == nil
-				d = append(d, data{Repo: repos[i], Disabled: disabled})
+        var branch = ""
+        if e == nil { branch = repoEntities[i].Branch }
+        d = append(d, data{Repo: repos[i], Disabled: disabled, Branch: branch})
 			}
 		} else {
 			ctx.Errorf("getmulti: %v", err)
@@ -241,7 +244,7 @@ type Repo struct {
 	FullName  string // e.g., MyUser/foo-bar
 	UserID    string // User key to use to close PRs
 	WebhookID int    // Used to delete the hook
-  Branch    string // branch to protect
+  Branch    string // branch to protect, or "" for all branches
 }
 
 func (r Repo) Split() (string, string) {
@@ -296,6 +299,12 @@ func disableHandler(w http.ResponseWriter, r *http.Request) {
 	// TODO: check that the user is an admin on the repo
 
 	fullName := r.URL.Path[len("/disable/"):]
+  branch := ""
+  if strings.Contains(fullName, "#") {
+    splits := strings.SplitN(fullName, "#", 2)
+    fullName = splits[0]
+    branch = splits[1]
+  }
 
 	ghUser, ghRepo := Repo{FullName: fullName}.Split()
 	hook, _, err := newClient(ctx, u.GitHubToken).Repositories.CreateHook(ghUser, ghRepo, &github.Hook{
@@ -316,8 +325,7 @@ func disableHandler(w http.ResponseWriter, r *http.Request) {
 		FullName:  fullName,
 		UserID:    u.GoogleUserID,
 		WebhookID: *hook.ID,
-    // TODO(dnicponski): This is not good enough!
-    Branch: "stage",
+    Branch: branch,
 	}); err != nil {
 		ctx.Errorf("put repo: %v", err)
 		renderError(w, "Error writing repo entry")
@@ -428,7 +436,7 @@ func webhookHandler(w http.ResponseWriter, r *http.Request) {
     }
 
     // TODO(dnicponski): This should be a per-repo list of branches, probably.
-    if *pr.Base.Ref != repo.Branch {
+    if repo.Branch != "" && *pr.Base.Ref != repo.Branch {
       ctx.Infof("avoiding to close PR with dest branch %s for repo %v", *pr.Base.Ref, *repo)
       return
     }
