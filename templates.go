@@ -9,9 +9,9 @@ var userTmpl = template.Must(template.New("user").Parse(`<html><head>
 </head><body><div id="container">
 <h1><span class="mega-octicon octicon-git-pull-request"></span>
 GitHub Pull Request Rejection Bot</h1>
-<ul><form>
+<ul style="width:1000"><form>
 {{range .}}
-<li><span class="octicon octicon-repo"></span>
+<li style="position: relative"><span class="octicon octicon-repo"></span>
   <a href="https://github.com/{{.Repo.Owner.Login}}/{{.Repo.Name}}">
   {{.Repo.Owner.Login}} / <b>{{.Repo.Name}}</b></a>
 {{if .Disabled}}
@@ -21,13 +21,13 @@ GitHub Pull Request Rejection Bot</h1>
   </button>
 {{else}}
   <button id="disable" type="submit" formaction="/disable/{{.Repo.Owner.Login}}/{{.Repo.Name}}#" formmethod="POST">
-    Disable pull requests (all)
+    Disable (all)
   </button>
    <button id="disable2" type="submit" formaction="/disable/{{.Repo.Owner.Login}}/{{.Repo.Name}}#master" formmethod="POST">
-    Disable pull requests (master)
+    Disable (master)
   </button>
    <button id="disable3" type="submit" formaction="/disable/{{.Repo.Owner.Login}}/{{.Repo.Name}}#stage" formmethod="POST">
-    Disable pull requests (stage)
+    Disable (stage)
   </button>
 
 {{end}}
