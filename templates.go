@@ -20,10 +20,19 @@ GitHub Pull Request Rejection Bot</h1>
     Re-enable pull requests ({{.Branch}})
   </button>
 {{else}}
-  <button id="disable" type="submit" formaction="/disable/{{.Repo.Owner.Login}}/{{.Repo.Name}}" formmethod="POST">
+  <button id="disable" type="submit" formaction="/disable/{{.Repo.Owner.Login}}/{{.Repo.Name}}#" formmethod="POST">
     <span class="octicon octicon-stop"></span>
-    Disable pull requests
+    Disable pull requests (all)
   </button>
+   <button id="disable2" type="submit" formaction="/disable/{{.Repo.Owner.Login}}/{{.Repo.Name}}#master" formmethod="POST">
+    <span class="octicon octicon-stop"></span>
+    Disable pull requests (master)
+  </button>
+   <button id="disable3" type="submit" formaction="/disable/{{.Repo.Owner.Login}}/{{.Repo.Name}}#stage" formmethod="POST">
+    <span class="octicon octicon-stop"></span>
+    Disable pull requests (stage)
+  </button>
+
 {{end}}
   </li>
 {{end}}
