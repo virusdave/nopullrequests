@@ -48,22 +48,22 @@ func init() {
 }
 
 func verifyLogin(ctx appengine.Context, u *user.User, w http.ResponseWriter, r *http.Request) bool {
-  redir := false
   if u == nil {
 		ctx.Infof("not logged in, redirecting...")
-    redir = true
-  } else {
-    if u.Email != "dave.nicponski@gmail.com" && u.Email != "dave@seamlessdocs.com" && u.Email != "chachi@seamlessdocs.com" {
-		  ctx.Infof("not logged in as me, redirecting...")
-      redir = true
-    }
-  }
-
-  if redir == true {
 		loginURL, _ := user.LoginURL(ctx, r.URL.Path)
 		http.Redirect(w, r, loginURL, http.StatusSeeOther)
+    return true
+
+  } else if u.Email != "dave.nicponski@gmail.com" &&
+            u.Email != "dave@seamlessdocs.com" &&
+            u.Email != "chachi@seamlessdocs.com" {
+    ctx.Infof("not logged in as me or chachi, redirecting...")
+    logoutURL, _ := user.LogoutURL(ctx, r.URL.Path)
+    http.Redirect(w, r, logoutURL, http.StatusSeeOther)
+    return true
   }
-  return redir
+
+  return false
 }
 
 func startHandler(w http.ResponseWriter, r *http.Request) {
