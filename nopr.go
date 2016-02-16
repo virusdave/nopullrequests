@@ -47,7 +47,7 @@ func init() {
 	http.HandleFunc("/hook", webhookHandler)
 }
 
-func verifyLogin(c appengine.Context, u *user.User, w http.ResponseWriter, r *http.Request) bool {
+func verifyLogin(ctx appengine.Context, u *user.User, w http.ResponseWriter, r *http.Request) bool {
   redir := false
   if u == nil {
 		ctx.Infof("not logged in, redirecting...")
