@@ -47,15 +47,29 @@ func init() {
 	http.HandleFunc("/hook", webhookHandler)
 }
 
+func verifyLogin(c appengine.Context, u *user.User, w http.ResponseWriter, r *http.Request) bool {
+  redir := false
+  if u == nil {
+		ctx.Infof("not logged in, redirecting...")
+    redir = true
+  } else {
+    if u.Email != "dave.nicponski@gmail.com" && u.Email != "dave@seamlessdocs.com" && u.Email != "chachi@seamlessdocs.com" {
+		  ctx.Infof("not logged in as me, redirecting...")
+      redir = true
+    }
+  }
+
+  if redir == true {
+		loginURL, _ := user.LoginURL(ctx, r.URL.Path)
+		http.Redirect(w, r, loginURL, http.StatusSeeOther)
+  }
+  return redir
+}
+
 func startHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := appengine.NewContext(r)
 	u := user.Current(ctx)
-	if u == nil {
-		ctx.Infof("not logged in, redirecting...")
-		loginURL, _ := user.LoginURL(ctx, r.URL.Path)
-		http.Redirect(w, r, loginURL, http.StatusSeeOther)
-		return
-	}
+	if verifyLogin(ctx, u, w, r) { return }
 
 	ctx.Infof("starting oauth...")
 	redirectURL := fmt.Sprintf("https://%s.appspot.com", appengine.AppID(ctx)) + redirectURLPath
@@ -79,12 +93,7 @@ func oauthHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	u := user.Current(ctx)
-	if u == nil {
-		ctx.Infof("not logged in, redirecting...")
-		loginURL, _ := user.LoginURL(ctx, r.URL.Path)
-		http.Redirect(w, r, loginURL, http.StatusSeeOther)
-		return
-	}
+	if verifyLogin(ctx, u, w, r) { return }
 
 	tok, err := getAccessToken(ctx, code)
 	if err != nil {
@@ -181,12 +190,7 @@ func DeleteUser(ctx appengine.Context, userID string) error {
 func userHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := appengine.NewContext(r)
 	uu := user.Current(ctx)
-	if uu == nil {
-		ctx.Infof("not logged in, redirecting...")
-		loginURL, _ := user.LoginURL(ctx, r.URL.Path)
-		http.Redirect(w, r, loginURL, http.StatusSeeOther)
-		return
-	}
+	if verifyLogin(ctx, uu, w, r) { return }
 	u := GetUser(ctx, uu.ID)
 	if u == nil {
 		ctx.Infof("unknown user, going to /start")
@@ -284,12 +288,8 @@ func disableHandler(w http.ResponseWriter, r *http.Request) {
 
 	ctx := appengine.NewContext(r)
 	uu := user.Current(ctx)
-	if uu == nil {
-		ctx.Infof("not logged in, redirecting...")
-		loginURL, _ := user.LoginURL(ctx, r.URL.Path)
-		http.Redirect(w, r, loginURL, http.StatusSeeOther)
-		return
-	}
+	if verifyLogin(ctx, uu, w, r) { return }
+
 	u := GetUser(ctx, uu.ID)
 	if u == nil {
 		ctx.Infof("unknown user, going to /start")
@@ -342,12 +342,8 @@ func enableHandler(w http.ResponseWriter, r *http.Request) {
 
 	ctx := appengine.NewContext(r)
 	uu := user.Current(ctx)
-	if uu == nil {
-		ctx.Infof("not logged in, redirecting...")
-		loginURL, _ := user.LoginURL(ctx, r.URL.Path)
-		http.Redirect(w, r, loginURL, http.StatusSeeOther)
-		return
-	}
+	if verifyLogin(ctx, uu, w, r) { return }
+
 	u := GetUser(ctx, uu.ID)
 	if u == nil {
 		ctx.Infof("unknown user, going to /start")
@@ -464,12 +460,8 @@ func revokeHandler(w http.ResponseWriter, r *http.Request) {
 
 	ctx := appengine.NewContext(r)
 	uu := user.Current(ctx)
-	if uu == nil {
-		ctx.Infof("not logged in, redirecting...")
-		loginURL, _ := user.LoginURL(ctx, r.URL.Path)
-		http.Redirect(w, r, loginURL, http.StatusSeeOther)
-		return
-	}
+	if verifyLogin(ctx, uu, w, r) { return }
+
 	u := GetUser(ctx, uu.ID)
 	if u == nil {
 		ctx.Infof("unknown user, going to /start")
